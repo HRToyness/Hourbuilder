@@ -19,18 +19,9 @@ if [[ ! -f "$DMG" ]]; then
     exit 1
 fi
 
-if ! security find-generic-password -s "com.apple.gke.notary.tool" -a "$PROFILE" >/dev/null 2>&1; then
-    cat >&2 <<EOF
-ERR: notary profile '$PROFILE' niet gevonden in Keychain.
-
-Setup eerst eenmalig:
-    scripts/setup-notary.sh
-
-EOF
-    exit 1
-fi
-
 echo "▸ Submit naar Apple notary (kan een paar minuten duren)…"
+echo "  Als profiel '$PROFILE' niet bestaat geeft notarytool een duidelijke fout —"
+echo "  setup dan eerst via: scripts/setup-notary.sh"
 xcrun notarytool submit "$DMG" \
     --keychain-profile "$PROFILE" \
     --wait
