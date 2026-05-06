@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UrenReconstructie — reconstrueer je urenregistratie, zonder dat klantdata je Mac verlaat</title>
+<meta name="description" content="Native macOS app voor zelfstandige consultants. Reconstrueer uren aan einde van een traject uit agenda, CSV, XLSX en eigen invoer. AI-assist via Claude of OpenAI met anonimisatie. Lokaal-eerst.">
+<meta property="og:title" content="UrenReconstructie — uren-reconstructie voor consultants">
+<meta property="og:description" content="Reconstrueer uren aan einde van een consulting-traject uit agenda, CSV, XLSX en eigen invoer. AI met anonimisatie, lokaal-eerst, factuur-aansluitend.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://hrtoyness.github.io/Hourbuilder/assets/icon.png">
+<meta property="og:url" content="https://hrtoyness.github.io/Hourbuilder/">
+<link rel="icon" href="assets/icon.png" type="image/png">
+<style>
+  :root {
+    --mint: #2dd4a8;
+    --mint-dark: #0a6b40;
+    --navy: #14152a;
+    --navy-soft: #1d1f3a;
+    --card: #232548;
+    --text: #f0eee5;
+    --muted: #9da4b6;
+    --accent-warm: #fbbf67;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: radial-gradient(ellipse at top, #1a1d3b 0%, var(--navy) 60%);
+    min-height: 100vh;
+  }
+  a { color: var(--mint); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13.5px;
+  }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+
+  header.hero {
+    text-align: center;
+    padding: 64px 0 40px;
+  }
+  .icon {
+    width: 132px; height: 132px;
+    border-radius: 30px;
+    box-shadow: 0 22px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    margin-bottom: 28px;
+    display: inline-block;
+  }
+  .icon img { width: 100%; height: 100%; border-radius: 30px; display: block; }
+  h1 {
+    font-size: 48px; letter-spacing: -0.6px; margin: 0 0 12px; line-height: 1.12;
+    font-weight: 800;
+  }
+  .tagline {
+    font-size: 19px; color: var(--muted); margin: 0 auto 30px; max-width: 680px;
+    line-height: 1.45;
+  }
+
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(180deg, var(--mint) 0%, #1ba37e 100%);
+    color: #062920; text-decoration: none; font-weight: 700;
+    padding: 14px 22px; border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(45,212,168,0.30);
+    transition: transform 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-1px); text-decoration: none; }
+  .cta.secondary {
+    background: var(--card); color: var(--text);
+    box-shadow: none; border: 1px solid rgba(255,255,255,0.08);
+  }
+  .small { font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  section { padding: 48px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+  h2 { font-size: 28px; letter-spacing: -0.3px; margin: 0 0 24px; }
+
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.5; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    background: rgba(45,212,168,0.14); color: var(--mint);
+    font-size: 12px; margin-bottom: 10px; letter-spacing: 0.3px;
+    font-weight: 600;
+  }
+  .tag.warm { background: rgba(251,191,103,0.14); color: var(--accent-warm); }
+
+  .privacy {
+    background: linear-gradient(180deg, rgba(45,212,168,0.10), rgba(140,81,229,0.10));
+    border-radius: 18px; padding: 28px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .privacy h2 { margin-top: 0; }
+  .privacy ul { margin: 14px 0 0; padding-left: 20px; color: var(--muted); }
+  .privacy ul li { margin-bottom: 6px; }
+  .privacy table {
+    margin-top: 16px; border-collapse: collapse; width: 100%;
+    font-size: 14.5px;
+  }
+  .privacy td {
+    padding: 10px 12px; vertical-align: top;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: var(--muted);
+  }
+  .privacy td:first-child {
+    font-weight: 600; color: var(--text); width: 38%;
+  }
+  .privacy tr:last-child td { border-bottom: 0; }
+
+  ol.steps { list-style: none; padding: 0; counter-reset: s; margin: 0; }
+  ol.steps li {
+    counter-increment: s; padding: 14px 0 14px 44px;
+    position: relative;
+  }
+  ol.steps li::before {
+    content: counter(s);
+    position: absolute; left: 0; top: 12px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(180deg, var(--mint), #0a6b40);
+    color: white; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .pipeline {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    margin-top: 16px;
+  }
+  .pipeline .step {
+    background: var(--card); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 14px; text-align: center;
+    font-size: 13px; color: var(--muted);
+  }
+  .pipeline .step strong {
+    display: block; color: var(--text); font-size: 15px; margin-bottom: 4px;
+  }
+
+  footer {
+    padding: 40px 0 60px; text-align: center;
+    color: var(--muted); font-size: 14px;
+  }
+  footer a { color: var(--muted); margin: 0 8px; }
+  footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header class="hero">
+  <div class="icon"><img src="assets/icon.png" alt="UrenReconstructie icon"></div>
+  <h1>UrenReconstructie</h1>
+  <p class="tagline">
+    Reconstrueer je urenregistratie aan het einde van een traject — uit agenda-afspraken, leverancier-bijlagen en eigen aantekeningen. Native macOS app, lokaal-eerst, factuur-aansluitend.
+  </p>
+  <div class="cta-row">
+    <a class="cta" href="https://github.com/HRToyness/Hourbuilder/releases/latest/download/UrenReconstructie-0.1.0.dmg">
+      Download voor macOS
+    </a>
+    <a class="cta secondary" href="https://github.com/HRToyness/Hourbuilder">
+      Source op GitHub
+    </a>
+  </div>
+  <div class="small">macOS 14+ · Apple Silicon &amp; Intel · gesigneerd &amp; genotariseerd · 5 MB · v0.1.0</div>
+</header>
+
+<section style="padding-top: 8px;">
+  <div style="background: linear-gradient(180deg, rgba(45,212,168,0.16), rgba(140,81,229,0.16)); border-radius: 14px; padding: 18px 22px; display:flex; align-items:flex-start; gap:14px; border: 1px solid rgba(255,255,255,0.05);">
+    <div style="flex-shrink:0; width:34px; height:34px; border-radius:8px; background: linear-gradient(180deg, var(--mint), #0a6b40); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:18px;">✦</div>
+    <div>
+      <div style="font-weight:700; color:var(--text); margin-bottom:4px;">Voor wie?</div>
+      <div style="color:var(--muted); font-size:14.5px; line-height:1.5;">
+        ZZP'ers en kleine bureaus die aan het einde van een consulting-traject hun urenregistratie moeten dichttimmeren op basis van fragmentarische bronnen — en geen zin hebben hun klantdata in een SaaS te uploaden.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Wat doet het</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="tag">Hart van de app</div>
+      <h3>Matrix view</h3>
+      <p>Personen op de Y-as, weken op de X-as. Heat-map cellen kleuren naar uren-intensiteit. Concept (gestreept) vs bevestigd vs AI-voorstel (paarse rand met ✨) is in één oogopslag duidelijk.</p>
+    </div>
+    <div class="card">
+      <div class="tag">3 bronnen</div>
+      <h3>Imports met dedupe + undo</h3>
+      <p>Apple Calendar (EventKit), CSV met kolom-mapping, Excel (XLSX). Re-import doet geen dubbele inserts dankzij dedupe op event-id of bestand-regel. Hele importbatches in één klik terugdraaien.</p>
+    </div>
+    <div class="card">
+      <div class="tag warm">✨ AI assist</div>
+      <h3>Claude of OpenAI</h3>
+      <p>Wissel tussen Anthropic Claude en OpenAI in Settings. Een anonimisatie-laag stuurt alleen rolnamen (<code>intern_dev_1</code>) en uren-aantallen — nooit echte namen of klantnamen.</p>
+    </div>
+    <div class="card">
+      <h3>Project templates</h3>
+      <p>Bewaar fase-structuur, vaste teamleden, of placeholder-rollen ("PM klant", "webbouwer leverancier") die bij apply ingevuld worden. "Opslaan als template" extracteert relatieve timing van bestaand project.</p>
+    </div>
+    <div class="card">
+      <h3>Insights met SwiftUI Charts</h3>
+      <p>Per project: lijngrafiek uren-per-week (gestapeld per groep), staaf uren-per-fase, donut verdeling per persoon. Top 5 + "andere" om legenda leesbaar te houden.</p>
+    </div>
+    <div class="card">
+      <h3>Portfolio dashboard</h3>
+      <p>Cross-project overzicht zodra geen project geselecteerd is — KPI strip (uren deze maand, lopende projecten, te factureren), project-grid met sparklines van laatste 8 weken, recente activiteit.</p>
+    </div>
+    <div class="card">
+      <h3>Forecast inline</h3>
+      <p>Lineaire ETA-extrapolatie in de matrix-totalen: "ETA op koers · 195u op 31 mei" of "ETA achter · 175u". Sentiment-kleur per groep met doel.</p>
+    </div>
+    <div class="card">
+      <h3>PDF + CSV export</h3>
+      <p>PDF per partij (klant / intern / leverancier) met optionele branding (accent kleur en logo, configureerbaar in Settings). CSV met UTF-8 BOM is direct in Excel te openen.</p>
+    </div>
+    <div class="card">
+      <h3>Bulk-bevestigen</h3>
+      <p>Selecteer meerdere import-activiteiten in de tabel, één klik om ze allemaal van concept naar bevestigd te zetten — voorkomt klikken-tot-RSI bij grote agenda imports.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="privacy">
+    <h2>Privacy: jouw klantdata blijft op jouw Mac</h2>
+    <p style="color:var(--muted); margin: 0;">
+      UrenReconstructie is <b>lokaal-eerst</b> ontworpen. Geen account, geen telemetrie, geen analytics, geen cloud sync. De enige uitgaande netwerkverkeer gaat naar de AI-provider die je zelf kiest — en alleen als je actief op "Vul gaten in" klikt, en alleen met geanonimiseerde context.
+    </p>
+    <table>
+      <tr><td>Activiteiten, projecten, personen</td><td>SQLite-database in <code>~/Library/Application Support/UrenReconstructie/</code></td></tr>
+      <tr><td>API sleutels (Anthropic + OpenAI)</td><td>macOS Keychain — nooit plaintext op disk, nooit gelogd</td></tr>
+      <tr><td>Branding (kleur, logo)</td><td>UserDefaults + Application Support folder</td></tr>
+      <tr><td>AI-aanvragen</td><td>HTTPS naar <code>api.anthropic.com</code> of <code>api.openai.com</code> met <b>alleen</b> rolnamen + uren-buckets — geen namen, e-mails, klantgegevens</td></tr>
+      <tr><td>Backup</td><td>Time Machine, geen iCloud sync</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Installatie</h2>
+  <ol class="steps">
+    <li>
+      <a href="https://github.com/HRToyness/Hourbuilder/releases/latest/download/UrenReconstructie-0.1.0.dmg">Download de DMG</a> en dubbelklik 'm.
+    </li>
+    <li>
+      Sleep <b>UrenReconstructie.app</b> naar de <b>Applications</b> shortcut. Geen Gatekeeper-prompt — de app is gesigneerd en genotariseerd door Apple.
+    </li>
+    <li>
+      Open de app vanuit Applications. Bij eerste launch geeft macOS een prompt voor toegang tot Apple Calendar (alleen als je 'm gebruikt voor importeren).
+    </li>
+    <li>
+      Voor AI-features: open Settings (⌘,) → AI tab → kies provider en plak je API sleutel. Werkt met je eigen Anthropic of OpenAI account, geen extra abonnement.
+    </li>
+  </ol>
+</section>
+
+<section>
+  <h2>Onder de motorkap</h2>
+  <p style="color:var(--muted); margin: 0 0 16px;">
+    Modulair Swift Package, geen Xcode project nodig. Alles draait op SPM + bash scripts.
+  </p>
+  <div class="pipeline">
+    <div class="step"><strong>App</strong>SwiftUI @main entry</div>
+    <div class="step"><strong>Features</strong>SwiftUI views + @Observable VM's</div>
+    <div class="step"><strong>Database</strong>GRDB, repos, migrations, ApplyService, ForecastCalculator</div>
+    <div class="step"><strong>Services</strong>EventKit · CSV · XLSX · Claude · OpenAI · Anonymization · Keychain · Export</div>
+    <div class="step"><strong>Models</strong>Pure record types met GRDB conformances</div>
+    <div class="step"><strong>Styling</strong>Color/Font tokens, herbruikbare componenten</div>
+  </div>
+
+  <h3 style="margin: 28px 0 10px; font-size: 18px;">Build vanaf source</h3>
+  <pre style="background: var(--card); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px 18px; overflow-x: auto; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13.5px; color: var(--text);">git clone https://github.com/HRToyness/Hourbuilder.git
+cd Hourbuilder
+swift run UrenReconstructie     <span style="color:var(--muted);"># dev run</span>
+swift test                       <span style="color:var(--muted);"># 109 tests</span>
+scripts/release.sh               <span style="color:var(--muted);"># volledige release pipeline</span></pre>
+  <p class="small">
+    De release pipeline (SPM build → .app → .dmg → notarize → staple) vereist een Apple Developer ID Application certificaat in je Keychain. Eenmalige setup van notary credentials via <code>scripts/setup-notary.sh</code>.
+  </p>
+</section>
+
+<footer>
+  <div>
+    <a href="https://github.com/HRToyness/Hourbuilder">Source</a> ·
+    <a href="https://github.com/HRToyness/Hourbuilder/releases">Releases</a> ·
+    <a href="https://github.com/HRToyness/Hourbuilder/issues">Issues</a> ·
+    Gemaakt door <a href="https://github.com/HRToyness">Toyness IT</a>
+  </div>
+  <div style="margin-top:8px">
+    Niet aangesloten bij Apple, Anthropic of OpenAI.
+  </div>
+</footer>
+
+</div>
+
+</body>
+</html>
