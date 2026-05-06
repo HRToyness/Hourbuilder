@@ -240,7 +240,49 @@ public struct MatrixView: View {
                     .font(.appLabel(11))
                     .foregroundStyle(Color.appTextTertiary)
             }
+
+            if let forecast = forecastFor(groep: groep, totaal: totaal, doel: doel) {
+                forecastLabel(forecast)
+            }
         }
+    }
+
+    private func forecastFor(
+        groep: PersoonGroep,
+        totaal: Double,
+        doel: Double?
+    ) -> ForecastCalculator.Result? {
+        guard let project = viewModel.project,
+              let doel,
+              groep != .leverancier else { return nil }
+        let projectEnd = project.eindDatum ?? Date().addingTimeInterval(7 * 86400)
+        return ForecastCalculator.forecast(
+            currentUren: totaal,
+            projectStart: project.startDatum,
+            projectEnd: projectEnd,
+            now: Date(),
+            doelUren: doel
+        )
+    }
+
+    private func forecastLabel(_ forecast: ForecastCalculator.Result) -> some View {
+        let dateText = formatDateShort(forecast.etaDatum)
+        let urenText = formatHours(forecast.etaUren)
+        let (prefix, sentiment): (String, DeltaLabel.Sentiment) = {
+            switch forecast.sentiment {
+            case .onTrack: return ("→ ETA op koers · \(urenText)u op \(dateText)", .positive)
+            case .behind:  return ("→ ETA achter · \(urenText)u op \(dateText)", .neutral)
+            case .over:    return ("→ ETA over · \(urenText)u op \(dateText)", .negative)
+            }
+        }()
+        return DeltaLabel(prefix, sentiment: sentiment)
+    }
+
+    private func formatDateShort(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "nl_NL")
+        f.dateFormat = "d MMM"
+        return f.string(from: date)
     }
 
     private var statusBreakdown: some View {

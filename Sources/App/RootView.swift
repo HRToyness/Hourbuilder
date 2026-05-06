@@ -10,6 +10,7 @@ struct RootView: View {
 
     @State private var listViewModel: ProjectListViewModel
     @State private var templateListVM: TemplateListViewModel
+    @State private var portfolioVM: PortfolioViewModel
 
     init(appDatabase: AppDatabase, initError: String?) {
         self.appDatabase = appDatabase
@@ -21,6 +22,9 @@ struct RootView: View {
             templateRepo: ProjectTemplateRepository(writer: appDatabase.dbWriter),
             faseRepo: TemplateFaseRepository(writer: appDatabase.dbWriter),
             entryRepo: TemplatePersoonEntryRepository(writer: appDatabase.dbWriter)
+        ))
+        _portfolioVM = State(initialValue: PortfolioViewModel(
+            projectRepo: ProjectRepository(writer: appDatabase.dbWriter)
         ))
     }
 
@@ -59,27 +63,9 @@ struct RootView: View {
             ProjectDetailView(projectId: projectId, appDatabase: appDatabase)
                 .id(projectId)
         } else {
-            emptyDetail
-        }
-    }
-
-    private var emptyDetail: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "rectangle.grid.3x2")
-                .font(.system(size: 36, weight: .light))
-                .foregroundStyle(Color.appTextTertiary)
-            VStack(spacing: 6) {
-                Text("Geen project geselecteerd")
-                    .font(.appH1(16))
-                    .foregroundStyle(Color.appTextPrimary)
-                Text("Kies links een project of maak er een nieuw aan om de matrix te zien.")
-                    .font(.appBody(12))
-                    .foregroundStyle(Color.appTextSecondary)
-                    .multilineTextAlignment(.center)
+            PortfolioView(viewModel: portfolioVM) { projectId in
+                listViewModel.selectedProjectId = projectId
             }
         }
-        .padding(40)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.appBackground)
     }
 }

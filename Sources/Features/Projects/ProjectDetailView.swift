@@ -13,6 +13,7 @@ public struct ProjectDetailView: View {
     @State private var activiteitVM: ActiviteitListViewModel
     @State private var personenVM: PersoonListViewModel
     @State private var faseVM: FaseListViewModel
+    @State private var insightsVM: InsightsViewModel
     @State private var reconstructionVM: ReconstructionViewModel
     @State private var selectedTab: Tab = .matrix
     @State private var showCalendarImportSheet = false
@@ -25,6 +26,7 @@ public struct ProjectDetailView: View {
         case activiteiten = "Activiteiten"
         case personen = "Personen"
         case fases = "Fases"
+        case insights = "Insights"
         case reconstructie = "Reconstructie"
 
         var id: String { rawValue }
@@ -52,6 +54,10 @@ public struct ProjectDetailView: View {
             projectId: projectId,
             repository: FaseRepository(writer: appDatabase.dbWriter)
         )
+        let insights = InsightsViewModel(
+            projectId: projectId,
+            activiteitRepo: ActiviteitRepository(writer: appDatabase.dbWriter)
+        )
         let reconstruction = ReconstructionViewModel(
             projectId: projectId,
             projectRepo: ProjectRepository(writer: appDatabase.dbWriter),
@@ -77,6 +83,7 @@ public struct ProjectDetailView: View {
         _activiteitVM = State(initialValue: activiteit)
         _personenVM = State(initialValue: personen)
         _faseVM = State(initialValue: fase)
+        _insightsVM = State(initialValue: insights)
         _reconstructionVM = State(initialValue: reconstruction)
     }
 
@@ -199,6 +206,13 @@ public struct ProjectDetailView: View {
                     Task { await faseVM.load() }
                 }
             }
+        case .insights:
+            InsightsView(viewModel: insightsVM)
+                .onChange(of: selectedTab) { _, newValue in
+                    if newValue == .insights {
+                        Task { await insightsVM.load() }
+                    }
+                }
         case .reconstructie:
             ReconstructionView(
                 viewModel: reconstructionVM,
@@ -233,6 +247,7 @@ public struct ProjectDetailView: View {
             .init(id: .activiteiten, label: "Activiteiten", count: activiteitVM.activiteiten.count),
             .init(id: .personen, label: "Personen", count: personenInProject),
             .init(id: .fases, label: "Fases", count: faseVM.fases.count),
+            .init(id: .insights, label: "Insights"),
             .init(id: .reconstructie, label: "Reconstructie", count: pendingAi, countTone: pendingAi > 0 ? .ai : .neutral),
         ]
     }

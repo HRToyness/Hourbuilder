@@ -39,6 +39,127 @@ public struct ActiviteitRepository: Sendable {
         }
     }
 
+    // MARK: - Aggregaties (voor Insights/Portfolio)
+
+    /// Som van bevestigde uren per ISO-week, gegroepeerd per persoonsgroep.
+    /// Returnt gesorteerd op week-start oplopend.
+    public func urenPerWeek(projectId: UUID) async throws -> [WeekTotals] {
+        try await writer.read { db in
+            let projectKey = projectId.uuidString.uppercased()
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT activiteit.datum AS datum,
+                       persoon.type AS type,
+                       activiteit.uren AS uren
+                FROM activiteit
+                JOIN persoon ON persoon.id = activiteit.persoonId
+                WHERE activiteit.projectId = ?
+                  AND activiteit.status = ?
+                """, arguments: [projectKey, ActiviteitStatus.bevestigd.rawValue])
+
+            var calendar = Calendar(identifier: .iso8601)
+            calendar.firstWeekday = 2
+            calendar.minimumDaysInFirstWeek = 4
+
+            var bucketed: [String: (start: Date, perGroep: [PersoonGroep: Double])] = [:]
+            for row in rows {
+                guard let datum: Date = row["datum"],
+                      let typeRaw: String = row["type"],
+                      let type = PersoonType(rawValue: typeRaw) else { continue }
+                let uren: Double = row["uren"] ?? 0
+                let comps = calendar.dateComponents(
+                    [.yearForWeekOfYear, .weekOfYear],
+                    from: datum
+                )
+                guard let yfwy = comps.yearForWeekOfYear,
+                      let woy = comps.weekOfYear else { continue }
+                let key = "\(yfwy)-W\(String(format: "%02d", woy))"
+                let weekStart = calendar.dateInterval(of: .weekOfYear, for: datum)?.start ?? datum
+
+                var entry = bucketed[key] ?? (weekStart, [:])
+                entry.perGroep[type.groep, default: 0] += uren
+                bucketed[key] = entry
+            }
+
+            return bucketed
+                .map { (key, value) in
+                    WeekTotals(yearWeek: key, weekStart: value.start, perGroep: value.perGroep)
+                }
+                .sorted { $0.weekStart < $1.weekStart }
+        }
+    }
+
+    /// Som van bevestigde uren per fase (incl. "Geen fase" bucket).
+    public func urenPerFase(projectId: UUID) async throws -> [FaseTotals] {
+        try await writer.read { db in
+            let projectKey = projectId.uuidString.uppercased()
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT activiteit.faseId AS faseId,
+                       fase.naam AS faseNaam,
+                       fase.volgorde AS volgorde,
+                       persoon.type AS type,
+                       activiteit.uren AS uren
+                FROM activiteit
+                JOIN persoon ON persoon.id = activiteit.persoonId
+                LEFT JOIN fase ON fase.id = activiteit.faseId
+                WHERE activiteit.projectId = ?
+                  AND activiteit.status = ?
+                """, arguments: [projectKey, ActiviteitStatus.bevestigd.rawValue])
+
+            struct Bucket {
+                var faseId: UUID?
+                var naam: String
+                var volgorde: Int
+                var perGroep: [PersoonGroep: Double] = [:]
+            }
+            var bucketed: [String: Bucket] = [:]
+            for row in rows {
+                let faseIdStr: String? = row["faseId"]
+                let faseId: UUID? = faseIdStr.flatMap { UUID(uuidString: $0) }
+                let key = faseIdStr ?? "_geen"
+                let naam: String = row["faseNaam"] ?? "Geen fase"
+                let volgorde: Int = row["volgorde"] ?? Int.max
+                guard let typeRaw: String = row["type"],
+                      let type = PersoonType(rawValue: typeRaw) else { continue }
+                let uren: Double = row["uren"] ?? 0
+
+                var entry = bucketed[key] ?? Bucket(faseId: faseId, naam: naam, volgorde: volgorde)
+                entry.perGroep[type.groep, default: 0] += uren
+                bucketed[key] = entry
+            }
+
+            return bucketed.values
+                .sorted { $0.volgorde < $1.volgorde }
+                .map { FaseTotals(faseId: $0.faseId, naam: $0.naam, perGroep: $0.perGroep) }
+        }
+    }
+
+    /// Bevestigde uren per persoon, gesorteerd op totaal descending.
+    public func urenPerPersoon(projectId: UUID) async throws -> [PersoonTotals] {
+        try await writer.read { db in
+            let projectKey = projectId.uuidString.uppercased()
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT persoon.id AS id,
+                       persoon.naam AS naam,
+                       persoon.rol AS rol,
+                       persoon.type AS type,
+                       persoon.email AS email,
+                       SUM(activiteit.uren) AS totaal
+                FROM activiteit
+                JOIN persoon ON persoon.id = activiteit.persoonId
+                WHERE activiteit.projectId = ?
+                  AND activiteit.status = ?
+                GROUP BY persoon.id
+                ORDER BY totaal DESC
+                """, arguments: [projectKey, ActiviteitStatus.bevestigd.rawValue])
+
+            return try rows.map { row in
+                let totaal: Double = row["totaal"] ?? 0
+                let persoon = try Persoon(row: row)
+                return PersoonTotals(persoon: persoon, totaal: totaal)
+            }
+        }
+    }
+
     /// Werkt de status bij van meerdere activiteiten in één transactie.
     /// Returnt het aantal aangepaste rijen.
     @discardableResult
@@ -186,6 +307,44 @@ public struct ActiviteitRepository: Sendable {
                 fases: fases
             )
         }
+    }
+}
+
+public struct WeekTotals: Sendable, Hashable {
+    public let yearWeek: String
+    public let weekStart: Date
+    public let perGroep: [PersoonGroep: Double]
+
+    public init(yearWeek: String, weekStart: Date, perGroep: [PersoonGroep: Double]) {
+        self.yearWeek = yearWeek
+        self.weekStart = weekStart
+        self.perGroep = perGroep
+    }
+
+    public var totaal: Double { perGroep.values.reduce(0, +) }
+}
+
+public struct FaseTotals: Sendable, Hashable {
+    public let faseId: UUID?
+    public let naam: String
+    public let perGroep: [PersoonGroep: Double]
+
+    public init(faseId: UUID?, naam: String, perGroep: [PersoonGroep: Double]) {
+        self.faseId = faseId
+        self.naam = naam
+        self.perGroep = perGroep
+    }
+
+    public var totaal: Double { perGroep.values.reduce(0, +) }
+}
+
+public struct PersoonTotals: Sendable, Hashable {
+    public let persoon: Persoon
+    public let totaal: Double
+
+    public init(persoon: Persoon, totaal: Double) {
+        self.persoon = persoon
+        self.totaal = totaal
     }
 }
 
