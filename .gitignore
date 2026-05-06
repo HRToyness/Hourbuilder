@@ -1,0 +1,24 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+*.xcodeproj
+xcuserdata/
+*.xcuserstate
+*.pbxuser
+*.xccheckout
+
+# macOS
+.DS_Store
+
+# Brainstorming sessions (per superpowers skill)
+.superpowers/
+
+# Original setup bundle (geëxtraheerd naar .claude/skills + root)
+urenreconstructie-claude-setup/
+urenreconstructie-claude-setup.zip
+
+# Local app data — staat in ~/Library/Application Support/, hoort niet in repo
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
