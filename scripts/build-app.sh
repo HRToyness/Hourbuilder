@@ -15,6 +15,18 @@ DEV_ID_CERT="${DEV_ID_CERT:-Developer ID Application: Teun Kralt (TPQD8BJ6DW)}"
 DIST="$ROOT/dist"
 APP="$DIST/$APP_NAME.app"
 
+# Sparkle: lees public key voor SUPublicEDKey in Info.plist. Eenmalige setup
+# via scripts/setup-sparkle.sh.
+SPARKLE_PUB_FILE="$ROOT/Resources/Sparkle.pub"
+if [[ -f "$SPARKLE_PUB_FILE" ]]; then
+    SPARKLE_PUB="$(cat "$SPARKLE_PUB_FILE")"
+else
+    echo "WARN: $SPARKLE_PUB_FILE bestaat niet — auto-update werkt niet" >&2
+    echo "      run scripts/setup-sparkle.sh om er één te genereren" >&2
+    SPARKLE_PUB=""
+fi
+SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://hrtoyness.github.io/Hourbuilder/appcast.xml}"
+
 echo "▸ Iconset / .icns aanmaken"
 "$ROOT/scripts/generate-icon.swift" "$ROOT/Resources" >/dev/null
 
@@ -38,6 +50,23 @@ mkdir -p "$APP/Contents/Resources"
 
 cp "$EXEC" "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+
+# Sparkle framework meekopiëren naar Contents/Frameworks. SPM kopieert 'm
+# naar de release build folder; xcframework variant zit onder artifacts/.
+SPARKLE_FRAMEWORK="$(dirname "$EXEC")/Sparkle.framework"
+if [[ ! -d "$SPARKLE_FRAMEWORK" ]]; then
+    SPARKLE_FRAMEWORK="$(find "$ROOT/.build" -name Sparkle.framework -type d -path '*/release/*' | head -1)"
+fi
+if [[ ! -d "$SPARKLE_FRAMEWORK" ]]; then
+    SPARKLE_FRAMEWORK="$(find "$ROOT/.build/artifacts" -name Sparkle.framework -type d -path '*macos-arm64*' | head -1)"
+fi
+if [[ -d "$SPARKLE_FRAMEWORK" ]]; then
+    mkdir -p "$APP/Contents/Frameworks"
+    cp -R "$SPARKLE_FRAMEWORK" "$APP/Contents/Frameworks/Sparkle.framework"
+    echo "  Sparkle.framework gekopieerd uit: $SPARKLE_FRAMEWORK"
+else
+    echo "WARN: kan Sparkle.framework niet vinden in .build — auto-update werkt niet" >&2
+fi
 
 YEAR="$(date +%Y)"
 cat > "$APP/Contents/Info.plist" <<EOF
@@ -83,11 +112,30 @@ cat > "$APP/Contents/Info.plist" <<EOF
     <true/>
     <key>NSSupportsSuddenTermination</key>
     <false/>
+    <key>SUFeedURL</key>
+    <string>$SPARKLE_FEED_URL</string>
+    <key>SUPublicEDKey</key>
+    <string>$SPARKLE_PUB</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>86400</integer>
+    <key>SUAutomaticallyUpdate</key>
+    <false/>
 </dict>
 </plist>
 EOF
 
 echo "▸ Code sign (hardened runtime + entitlements)"
+# Sparkle XPC services + framework eerst signen (van binnen naar buiten),
+# dan de hele bundle.
+if [[ -d "$APP/Contents/Frameworks/Sparkle.framework" ]]; then
+    # Gebruik --deep voor de framework + alle nested binaries (XPC, Autoupdate)
+    codesign --force --options runtime --timestamp \
+        --sign "$DEV_ID_CERT" \
+        --deep \
+        "$APP/Contents/Frameworks/Sparkle.framework"
+fi
 codesign --force --options runtime --timestamp \
     --entitlements "$ROOT/Resources/Entitlements.plist" \
     --sign "$DEV_ID_CERT" \

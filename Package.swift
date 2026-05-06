@@ -16,11 +16,19 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.29.0"),
         .package(url: "https://github.com/CoreOffice/CoreXLSX.git", from: "0.14.0"),
+        .package(url: "https://github.com/sparkle-project/Sparkle.git", from: "2.6.0"),
     ],
     targets: [
         .executableTarget(
             name: "App",
-            dependencies: ["Features", "Database", "Services", "Styling", "Models"],
+            dependencies: [
+                "Features",
+                "Database",
+                "Services",
+                "Styling",
+                "Models",
+                .product(name: "Sparkle", package: "Sparkle"),
+            ],
             path: "Sources/App"
         ),
         .target(

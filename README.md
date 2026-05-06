@@ -26,6 +26,8 @@ Geen live timetracking, geen cloud, geen team-collaboratie. Eén Mac, jouw data,
 
 De dmg is **gesigneerd met Developer ID en genotariseerd door Apple** — Gatekeeper geeft geen waarschuwing.
 
+Toekomstige updates worden automatisch geleverd via Sparkle: de app checkt 1× per dag stilletjes op een nieuwe versie en presenteert een modal "Install and Relaunch" als er een is. Of pak het zelf via menu **UrenReconstructie → Check for Updates…**.
+
 ## Wat doet 'ie
 
 - 📊 **Matrix view**: personen op de Y-as, weken op de X-as. Heat-map cellen kleuren naar uren-intensiteit. Status per cel: bevestigd, concept (gestreept), AI-voorstel (paarse rand met ✨)
@@ -36,6 +38,7 @@ De dmg is **gesigneerd met Developer ID en genotariseerd door Apple** — Gateke
 - 🏠 **Portfolio dashboard**: cross-project overzicht met sparklines en KPIs zodra geen project geselecteerd is
 - 🔮 **Forecast inline**: lineaire ETA-extrapolatie ("ETA op koers · 195u op 31 mei") in de matrix totals-rij
 - 📤 **Export**: PDF (per partij — klant / intern / leverancier) en CSV (Excel-compatibel met UTF-8 BOM). Configureerbare branding (accent kleur + logo) in Settings
+- 🔄 **Auto-update**: Sparkle-gebaseerd, EdDSA-signed appcast op GitHub Pages. Geen handmatig downloaden bij volgende versies.
 
 ## Privacy
 
