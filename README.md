@@ -1,6 +1,30 @@
-# Claude Code Setup — UrenReconstructie
+# UrenReconstructie
 
-Drop-in setup for the UrenReconstructie macOS project.
+Native macOS app voor uren-reconstructie aan einde van consulting projecten.
+Lokaal-eerst, geen klantdata in de cloud.
+
+![App icon](Resources/AppIcon-1024.png)
+
+## Build / release
+
+```bash
+# Eenmalig: notary credentials in Keychain zetten
+scripts/setup-notary.sh
+
+# Daarna: complete release flow (.app + .dmg + notarize + staple)
+scripts/release.sh
+
+# Of stap voor stap:
+scripts/build-app.sh      # SPM → UrenReconstructie.app (gesigneerd)
+scripts/build-dmg.sh      # → UrenReconstructie-0.1.0.dmg (gesigneerd)
+scripts/notarize.sh       # Apple notary submit + staple
+```
+
+Versie override: `VERSION=0.2.0 scripts/release.sh`.
+
+Output in `dist/`. Geen Xcode project nodig — alles loopt via SPM + bash.
+
+## Claude Code setup
 
 ## Files
 

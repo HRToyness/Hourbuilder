@@ -22,3 +22,7 @@ urenreconstructie-claude-setup.zip
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+# Distributie artifacts
+dist/
+Resources/AppIcon.iconset/
