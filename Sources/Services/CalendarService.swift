@@ -1,6 +1,9 @@
 import Foundation
+import os
 #if canImport(EventKit)
 import EventKit
+
+private let log = Logger(subsystem: "nl.toynessit.urenreconstructie", category: "calendar")
 
 /// EventKit-gebaseerde implementatie. Tests gebruiken een stub die alleen aan
 /// `CalendarServiceProtocol` voldoet.
@@ -23,7 +26,12 @@ public final class CalendarService: CalendarServiceProtocol, @unchecked Sendable
     }
 
     public func requestAccess() async throws -> Bool {
-        try await store.requestFullAccessToEvents()
+        do {
+            return try await store.requestFullAccessToEvents()
+        } catch {
+            log.error("calendar requestAccess threw: \(String(describing: error), privacy: .public)")
+            throw error
+        }
     }
 
     public func availableCalendars() -> [CalendarDescriptor] {

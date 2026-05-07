@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.1.1}"
 APP_NAME="${APP_NAME:-UrenReconstructie}"
 DEV_ID_CERT="${DEV_ID_CERT:-Developer ID Application: Teun Kralt (TPQD8BJ6DW)}"
 
