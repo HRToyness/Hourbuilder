@@ -27,11 +27,14 @@ public struct EventMappingService: Sendable {
     ) -> Persoon? {
         let emails = descriptor.attendeeEmails.map { $0.lowercased() }
         guard !emails.isEmpty else { return nil }
+        // Bij dubbele emails: behoud de eerste — beter dan crashen, en de UI
+        // kan een waarschuwing tonen.
         let byEmail = Dictionary(
-            uniqueKeysWithValues: personen.compactMap { p -> (String, Persoon)? in
+            personen.compactMap { p -> (String, Persoon)? in
                 guard let email = p.email?.lowercased(), !email.isEmpty else { return nil }
                 return (email, p)
-            }
+            },
+            uniquingKeysWith: { first, _ in first }
         )
         for email in emails {
             if let match = byEmail[email] {
@@ -49,8 +52,11 @@ public struct EventMappingService: Sendable {
         faseId: UUID? = nil,
         persoonId: UUID
     ) -> Activiteit {
-        let title = descriptor.title?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let beschrijving = (title?.isEmpty == false ? title! : "Agenda-afspraak")
+        let trimmedTitle = descriptor.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let beschrijving: String = {
+            if let trimmedTitle, !trimmedTitle.isEmpty { return trimmedTitle }
+            return "Agenda-afspraak"
+        }()
 
         let datumFormatter = DateFormatter()
         datumFormatter.locale = Locale(identifier: "nl_NL")

@@ -70,6 +70,17 @@ final class EventMappingServiceTests: XCTestCase {
         XCTAssertNil(mapping.matchPersoon(in: descriptor, from: [alice]))
     }
 
+    func testMatchPersoonDoesNotCrashOnDuplicateEmails() {
+        // Twee personen met dezelfde email mag niet crashen — Dictionary
+        // moet uniqueKeysWithValues *niet* gebruiken.
+        let aliceA = Persoon(naam: "Alice (intern)", rol: "Dev", type: .intern, email: "alice@acme.nl")
+        let aliceB = Persoon(naam: "Alice (klant)", rol: "PM", type: .klant, email: "alice@acme.nl")
+        let descriptor = descriptor(attendees: ["alice@acme.nl"])
+        let match = mapping.matchPersoon(in: descriptor, from: [aliceA, aliceB])
+        // Eerste match wint — implementatie-detail, maar moet stabiel zijn.
+        XCTAssertEqual(match?.id, aliceA.id)
+    }
+
     func testMapDescriptorProducesConceptAgendaActivity() {
         let projectId = UUID()
         let persoonId = UUID()
