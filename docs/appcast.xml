@@ -10,7 +10,7 @@
             <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="https://github.com/HRToyness/Hourbuilder/releases/download/v0.1.0/UrenReconstructie-0.1.0.dmg" length="6324697" type="application/octet-stream" sparkle:edSignature="XHfF2nzrAhGm7u/Lonw7WzRR3ncE0VEAEyRjxs7ChSeHaGL9K8Ckew7YlqSoEGen68lXl4LHQPD7c/S/gln8Aw=="/>
+            <enclosure url="https://github.com/HRToyness/Hourbuilder/releases/download/v0.1.0/UrenReconstructie-0.1.0.dmg" length="6324827" type="application/octet-stream" sparkle:edSignature="KEaPp4brtvEJVmoB440OnpONVj0sEVLWRnobTk5KpVJyPLhmOKd4i8ACncfGAz68NW2jypRczDfTE518pxNhAg=="/>
         </item>
     </channel>
 </rss>
