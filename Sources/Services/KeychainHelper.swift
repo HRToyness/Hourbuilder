@@ -16,7 +16,10 @@ public enum KeychainHelper {
         }
     }
 
-    public static let service = "nl.toynessit.urenreconstructie"
+    /// Keychain service-identifier — volgt de bundle-ID zodat keys per
+    /// deployment uniek zijn. Fallback dekt tests/CLI waar Bundle.main.bundleIdentifier
+    /// niet beschikbaar is.
+    public static let service = Bundle.main.bundleIdentifier ?? "nl.toynessit.urenreconstructie"
 
     public static func account(for provider: AIProvider) -> String {
         switch provider {

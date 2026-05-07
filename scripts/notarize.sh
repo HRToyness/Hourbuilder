@@ -7,9 +7,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-0.1.0}"
-APP_NAME="${APP_NAME:-UrenReconstructie}"
-PROFILE="${NOTARY_PROFILE:-urenreconstructie-notary}"
+# shellcheck source=branding.sh
+source "$ROOT/scripts/branding.sh"
+PROFILE="$NOTARY_PROFILE"
 
 DIST="$ROOT/dist"
 DMG="$DIST/$APP_NAME-$VERSION.dmg"

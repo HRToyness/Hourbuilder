@@ -5,12 +5,12 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# shellcheck source=branding.sh
+source "$ROOT/scripts/branding.sh"
+
 "$ROOT/scripts/build-app.sh"
 "$ROOT/scripts/build-dmg.sh"
 "$ROOT/scripts/notarize.sh"
-
-VERSION="${VERSION:-0.1.0}"
-APP_NAME="${APP_NAME:-UrenReconstructie}"
 
 echo
 echo "🎉 Release $VERSION klaar:"

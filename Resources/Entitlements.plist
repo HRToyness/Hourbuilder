@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sandbox-keuze: deze app draait BEWUST buiten App Sandbox.
+
+  Redenen:
+  - Distributie via Developer ID + notarization (geen Mac App Store), waar
+    sandbox niet verplicht is.
+  - We willen lezen uit door de gebruiker gekozen Documents-mappen voor exports
+    en CSV/XLSX imports zonder per-bestand security-scoped bookmarks.
+  - Calendar-toegang draait via NSCalendarsUsageDescription (Info.plist) — dat
+    werkt buiten sandbox.
+
+  Als de app ooit naar Mac App Store moet, voeg dan toe:
+    com.apple.security.app-sandbox                       (true)
+    com.apple.security.personal-information.calendars    (true)
+    com.apple.security.files.user-selected.read-write    (true)
+  En zet sandbox-aware file-access (NSOpenPanel + bookmarks) op de import/export paden.
+-->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>

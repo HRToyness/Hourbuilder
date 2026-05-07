@@ -7,10 +7,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-0.1.0}"
-BUNDLE_ID="${BUNDLE_ID:-nl.toynessit.urenreconstructie}"
-APP_NAME="${APP_NAME:-UrenReconstructie}"
-DEV_ID_CERT="${DEV_ID_CERT:-Developer ID Application: Teun Kralt (TPQD8BJ6DW)}"
+# shellcheck source=branding.sh
+source "$ROOT/scripts/branding.sh"
 
 DIST="$ROOT/dist"
 APP="$DIST/$APP_NAME.app"
@@ -25,7 +23,6 @@ else
     echo "      run scripts/setup-sparkle.sh om er één te genereren" >&2
     SPARKLE_PUB=""
 fi
-SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://hrtoyness.github.io/Hourbuilder/appcast.xml}"
 
 echo "▸ Iconset / .icns aanmaken"
 "$ROOT/scripts/generate-icon.swift" "$ROOT/Resources" >/dev/null
@@ -105,7 +102,7 @@ cat > "$APP/Contents/Info.plist" <<EOF
     <key>NSCalendarsFullAccessUsageDescription</key>
     <string>UrenReconstructie leest agenda-afspraken om je urenregistratie te reconstrueren. Data blijft lokaal op je Mac.</string>
     <key>NSHumanReadableCopyright</key>
-    <string>© $YEAR Toyness IT</string>
+    <string>© $YEAR $COPYRIGHT_HOLDER</string>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSSupportsAutomaticTermination</key>

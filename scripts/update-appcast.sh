@@ -8,8 +8,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-0.1.0}"
-APP_NAME="${APP_NAME:-UrenReconstructie}"
+# shellcheck source=branding.sh
+source "$ROOT/scripts/branding.sh"
 
 DIST="$ROOT/dist"
 ARCHIVE="$DIST/archive"
@@ -35,8 +35,8 @@ cp -f "$DMG" "$ARCHIVE/"
 # private-key, schrijft full appcast.xml met release notes link naar GitHub.
 echo "▸ Appcast genereren uit $ARCHIVE"
 "$SPARKLE_BIN/generate_appcast" "$ARCHIVE" \
-    --download-url-prefix "https://github.com/HRToyness/Hourbuilder/releases/download/v$VERSION/" \
-    --link "https://hrtoyness.github.io/Hourbuilder/" \
+    --download-url-prefix "$RELEASE_DOWNLOAD_URL_PREFIX" \
+    --link "$RELEASE_LANDING_URL" \
     -o "$APPCAST"
 
 echo "✓ $APPCAST geschreven"
