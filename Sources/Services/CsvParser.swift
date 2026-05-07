@@ -43,7 +43,7 @@ public enum CsvParser {
         let delimiter = delimiterOverride ?? detectDelimiter(in: text)
         var rows: [[String]] = []
 
-        for rawLine in text.split(whereSeparator: { $0 == "\n" || $0 == "\r\n" }) {
+        for rawLine in text.split(whereSeparator: { $0.isNewline }) {
             let line = rawLine.trimmingCharacters(in: .init(charactersIn: "\r"))
             if line.isEmpty { continue }
             rows.append(splitLine(line, delimiter: delimiter))
