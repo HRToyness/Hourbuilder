@@ -200,7 +200,10 @@ public final class ReconstructionViewModel {
             _ = anonymization.anonymize(persoon: persoon)
         }
 
-        let rolTypen = Set(personen.map { anonymization.anonymize(persoon: $0) }).sorted()
+        // Stuur generieke rol-types ("intern_dev", "klant_pm") naar de AI in
+        // plaats van per-persoon anon-IDs ("intern_dev_1", "intern_dev_2") —
+        // dat geeft bruikbaardere prompt-context.
+        let rolTypen = Set(personen.map { anonymization.roleType(for: $0) }).sorted()
 
         return AnonymizedReconstructionPayload(
             projectContext: .init(
@@ -228,8 +231,22 @@ public final class ReconstructionViewModel {
     }
 
     private func projectDate(for weekIndex: Int, project: Project) -> Date {
-        let offset = TimeInterval(max(0, weekIndex - 1)) * 7 * 24 * 3600
-        return project.startDatum.addingTimeInterval(offset)
+        // Land mid-week zodat AI-suggesties niet allemaal op project-start-DOW
+        // blijven plakken. Offset+2 dagen, daarna zo nodig doorschuiven naar
+        // de eerstvolgende werkdag.
+        let dayOffset = max(0, weekIndex - 1) * 7 + 2
+        let candidate = project.startDatum.addingTimeInterval(TimeInterval(dayOffset) * 24 * 3600)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.firstWeekday = 2 // maandag
+        let weekday = calendar.component(.weekday, from: candidate)
+        // weekday: 1 = zondag, 7 = zaterdag.
+        let shift: Int
+        switch weekday {
+        case 7: shift = 2  // za → ma
+        case 1: shift = 1  // zo → ma
+        default: shift = 0
+        }
+        return calendar.date(byAdding: .day, value: shift, to: candidate) ?? candidate
     }
 
     private func bronCategory(_ bron: ActiviteitBron) -> String {
