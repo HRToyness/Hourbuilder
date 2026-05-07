@@ -51,6 +51,11 @@ mkdir -p "$APP/Contents/Resources"
 cp "$EXEC" "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 
+# SPM linker zet geen rpath voor Frameworks/. Voeg 'm zelf toe zodat
+# Sparkle.framework in Contents/Frameworks/ gevonden wordt op launch.
+install_name_tool -add_rpath "@executable_path/../Frameworks" \
+    "$APP/Contents/MacOS/$APP_NAME" 2>/dev/null || true
+
 # Sparkle framework meekopiëren naar Contents/Frameworks. SPM kopieert 'm
 # naar de release build folder; xcframework variant zit onder artifacts/.
 SPARKLE_FRAMEWORK="$(dirname "$EXEC")/Sparkle.framework"
