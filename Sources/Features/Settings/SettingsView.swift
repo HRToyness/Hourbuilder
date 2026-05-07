@@ -62,6 +62,8 @@ public struct SettingsView: View {
                 apiKeyStatus = "Actief: \(newProvider.label)"
             }
 
+            providerRetentionNotice
+
             HStack {
                 Image(systemName: hasKey ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
                     .foregroundStyle(hasKey ? Color.appAccentDark : Color.appWarning)
@@ -126,6 +128,36 @@ public struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .onAppear { refreshKeyState() }
+    }
+
+    @ViewBuilder
+    private var providerRetentionNotice: some View {
+        let (symbol, color, text) = retentionNoticeContent
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: symbol)
+                .foregroundStyle(color)
+            Text(text)
+                .font(.appBody(12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var retentionNoticeContent: (String, Color, String) {
+        switch activeProvider {
+        case .claude:
+            return (
+                "checkmark.shield.fill",
+                Color.appAccentDark,
+                "Anthropic bewaart payloads standaard niet (zero-day retention). Alleen geanonimiseerde data wordt verstuurd."
+            )
+        case .openai:
+            return (
+                "exclamationmark.triangle.fill",
+                Color.appWarning,
+                "OpenAI bewaart API-payloads tot 30 dagen voor abuse-monitoring tenzij je Zero Data Retention aanvraagt. Alleen geanonimiseerde data wordt verstuurd."
+            )
+        }
     }
 
     private var placeholderForKey: String {
